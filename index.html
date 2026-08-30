@@ -1,755 +1,407 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatSphere — общение в новом формате</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        :root {
-            --primary: #6c5ce7;
-            --primary-dark: #5a4bd1;
-            --secondary: #00cec9;
-            --gradient: linear-gradient(135deg, #6c5ce7 0%, #0984e3 100%);
-            --bg-light: #f8f9fd;
-            --card-bg: #ffffff;
-            --text-dark: #2d3436;
-            --text-muted: #636e72;
-            --border-color: #e1e5f2;
-            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 20px 50px rgba(108, 92, 231, 0.25);
-            --radius: 24px;
-            --radius-sm: 12px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-light);
-            color: var(--text-dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            line-height: 1.6;
-        }
-
-        /* ---------- ШАПКА ---------- */
-        .header {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 32px;
-            height: 72px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: var(--primary);
-            text-decoration: none;
-            letter-spacing: -0.5px;
-        }
-
-        .logo i {
-            font-size: 1.8rem;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.2px;
-            white-space: nowrap;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-        .btn-outline:hover {
-            background: rgba(108, 92, 231, 0.08);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(108, 92, 231, 0.2);
-        }
-
-        .btn-primary {
-            background: var(--gradient);
-            color: #fff;
-            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.35);
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(108, 92, 231, 0.45);
-        }
-
-        .profile {
-            display: none;
-            align-items: center;
-            gap: 12px;
-            background: white;
-            padding: 6px 16px 6px 6px;
-            border-radius: 50px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-            cursor: pointer;
-        }
-        .profile:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-        .profile.active {
-            display: flex;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            flex-shrink: 0;
-        }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-        .profile-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--text-dark);
-        }
-        .profile-role {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .btn-logout {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: var(--transition);
-            margin-left: 4px;
-        }
-        .btn-logout:hover {
-            background: #fee2e2;
-            color: #ef4444;
-        }
-
-        /* ---------- БОЛЬШОЙ БЕЛЫЙ КОНТЕЙНЕР (пустой) ---------- */
-        .big-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #ffffff;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            margin: 40px auto;
-            width: 90%;
-            max-width: 1000px;
-            min-height: 50vh;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        /* декоративные плавающие круги, без текста */
-        .big-container::before,
-        .big-container::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            z-index: 0;
-            pointer-events: none;
-        }
-        .big-container::before {
-            width: 380px;
-            height: 380px;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.12) 0%, transparent 70%);
-            top: -60px;
-            left: -60px;
-            animation: float 12s infinite alternate ease-in-out;
-        }
-        .big-container::after {
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle, rgba(0, 206, 201, 0.12) 0%, transparent 70%);
-            bottom: -50px;
-            right: -50px;
-            animation: float 15s infinite alternate-reverse ease-in-out;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, -20px) scale(1.05); }
-        }
-
-        .big-container .decor-circle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(108, 92, 231, 0.05);
-            z-index: 0;
-        }
-        .decor-circle.c1 {
-            width: 200px;
-            height: 200px;
-            top: 15%;
-            right: 10%;
-            background: rgba(108, 92, 231, 0.07);
-            animation: float 18s infinite alternate;
-        }
-        .decor-circle.c2 {
-            width: 140px;
-            height: 140px;
-            bottom: 20%;
-            left: 12%;
-            background: rgba(0, 206, 201, 0.09);
-            animation: float 20s infinite alternate-reverse;
-        }
-        .decor-circle.c3 {
-            width: 70px;
-            height: 70px;
-            top: 40%;
-            left: 35%;
-            background: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 0 20px rgba(108, 92, 231, 0.2);
-            animation: float 10s infinite alternate;
-        }
-
-        /* пустое пространство – занимает место, но ничего не отображает */
-        .big-container .empty-space {
-            z-index: 1;
-            width: 100%;
-            height: 100%;
-            min-height: 300px;
-        }
-
-        /* ---------- СЕКЦИЯ ЧАТА ---------- */
-        .chat-section {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0 20px 60px;
-            position: relative;
-            z-index: 5;
-            margin-top: -20px;
-        }
-
-        .chat-card {
-            width: 100%;
-            max-width: 600px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 520px;
-            transition: var(--transition);
-        }
-        .chat-card:hover {
-            box-shadow: 0 25px 60px rgba(108, 92, 231, 0.3);
-        }
-
-        .chat-header {
-            background: var(--gradient);
-            padding: 18px 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: white;
-        }
-        .chat-header .avatar-small {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            backdrop-filter: blur(5px);
-        }
-        .chat-header-info h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-        .chat-header-info span {
-            font-size: 0.8rem;
-            opacity: 0.85;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .online-dot {
-            width: 8px;
-            height: 8px;
-            background: #2ecc71;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            background: #fafbff;
-            scroll-behavior: smooth;
-        }
-        .chat-messages::-webkit-scrollbar {
-            width: 5px;
-        }
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #d0d5e0;
-            border-radius: 10px;
-        }
-
-        .message {
-            display: flex;
-            gap: 10px;
-            max-width: 80%;
-            animation: fadeInUp 0.3s ease;
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message .msg-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.8rem;
-            font-weight: 600;
-            flex-shrink: 0;
-            align-self: flex-end;
-        }
-
-        .message-content {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 18px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-            border: 1px solid #f1f3f9;
-            position: relative;
-        }
-        .message-content .msg-name {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-        .message-content .msg-text {
-            font-size: 0.95rem;
-            color: var(--text-dark);
-            word-break: break-word;
-        }
-        .message-content .msg-time {
-            display: block;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 6px;
-            text-align: right;
-        }
-
-        .message.me {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-        .message.me .msg-avatar {
-            background: var(--secondary);
-            align-self: flex-end;
-        }
-        .message.me .message-content {
-            background: #eef0ff;
-            border-color: #e0e3ff;
-        }
-        .message.me .message-content .msg-name {
-            color: var(--secondary);
-            text-align: right;
-        }
-        .message.me .message-content .msg-time {
-            text-align: left;
-        }
-
-        .chat-input {
-            display: flex;
-            padding: 16px 20px;
-            background: white;
-            border-top: 1px solid var(--border-color);
-            gap: 10px;
-            align-items: center;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 12px 18px;
-            border-radius: 50px;
-            border: 1.5px solid var(--border-color);
-            font-size: 0.95rem;
-            outline: none;
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-            background: #f8f9fd;
-        }
-        .chat-input input:focus {
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
-        }
-        .chat-input button {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: none;
-            background: var(--gradient);
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 16px rgba(108, 92, 231, 0.3);
-            flex-shrink: 0;
-        }
-        .chat-input button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 24px rgba(108, 92, 231, 0.45);
-        }
-        .chat-input button:active {
-            transform: scale(0.95);
-        }
-
-        /* адаптивность */
-        @media (max-width: 768px) {
-            .header {
-                padding: 0 16px;
-                height: 64px;
-            }
-            .logo span {
-                display: none;
-            }
-            .btn {
-                padding: 8px 16px;
-                font-size: 0.8rem;
-            }
-            .big-container {
-                margin: 20px auto;
-                width: 95%;
-                min-height: 40vh;
-                border-radius: 18px;
-            }
-            .chat-section {
-                margin-top: -10px;
-                padding: 0 12px 40px;
-            }
-            .chat-card {
-                height: 460px;
-            }
-            .auth-buttons {
-                gap: 6px;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Красивый сайт с чатом</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#6ee7b7;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02);
+      --radius:14px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body,#app{height:100%;margin:0;background:linear-gradient(180deg,#071028 0%, #071a2a 60%);color:#e6eef8}
+    .hero{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:48px;
+      gap:32px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-grid{
+      width:100%;
+      max-width:1200px;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:28px;
+      align-items:start;
+    }
+    .left{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:40px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+    .logo .mark{
+      width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#042027;
+      box-shadow:0 6px 18px rgba(99,102,241,0.12);
+    }
+    h1{font-size:36px;margin:0 0 12px 0;line-height:1.05}
+    p.lead{color:var(--muted);margin:0 0 22px 0;max-width:60%}
+    .cta-row{display:flex;gap:12px;align-items:center}
+    .btn{
+      background:linear-gradient(90deg,var(--accent),#60a5fa);
+      color:#042027;padding:12px 18px;border-radius:12px;border:0;font-weight:600;cursor:pointer;
+      box-shadow:0 8px 24px rgba(99,102,241,0.12);
+    }
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--accent)}
+    .features{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+    .feature{background:var(--glass);padding:10px 12px;border-radius:10px;color:var(--muted);font-size:13px}
+    /* Right column chat card */
+    .right{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:18px;
+      height:640px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    }
+    .chat-header{display:flex;align-items:center;justify-content:space-between;padding:6px 8px}
+    .profile-mini{display:flex;gap:10px;align-items:center}
+    .avatar{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#0ea5a5,#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042027;
+      overflow:hidden;border:2px solid rgba(255,255,255,0.03)
+    }
+    .status{font-size:13px;color:var(--muted)}
+    .chat-body{
+      background:linear-gradient(180deg,var(--glass-2),transparent);
+      border-radius:12px;padding:14px;flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;
+      border:1px solid rgba(255,255,255,0.02)
+    }
+    .msg{max-width:78%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.3}
+    .msg.me{align-self:flex-end;background:linear-gradient(90deg,#6ee7b7,#60a5fa);color:#042027;border-bottom-right-radius:6px}
+    .msg.other{align-self:flex-start;background:rgba(255,255,255,0.03);color:var(--muted);border-bottom-left-radius:6px}
+    .chat-footer{display:flex;gap:8px;align-items:center}
+    .input{
+      flex:1;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;color:inherit;
+      outline:none;font-size:14px;
+    }
+    .small{font-size:13px;color:var(--muted)}
+    /* Modal forms */
+    .modal{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.8));z-index:60;
+    }
+    .modal.open{display:flex}
+    .card{
+      background:linear-gradient(180deg,#071428,#071a2a);padding:20px;border-radius:14px;min-width:320px;max-width:420px;
+      box-shadow:0 20px 60px rgba(2,6,23,0.7);
+    }
+    .field{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    label{font-size:13px;color:var(--muted)}
+    input[type="text"], input[type="file"], input[type="password"]{
+      padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;outline:none;
+    }
+    .row{display:flex;gap:8px}
+    .muted{color:var(--muted);font-size:13px}
+    .profile-panel{display:flex;gap:12px;align-items:center}
+    .profile-panel .info{display:flex;flex-direction:column}
+    .actions{display:flex;gap:8px;align-items:center}
+    /* responsive */
+    @media (max-width:980px){
+      .hero-grid{grid-template-columns:1fr;align-items:stretch}
+      .right{height:520px}
+      p.lead{max-width:100%}
+    }
+  </style>
 </head>
 <body>
-
-    <!-- ШАПКА -->
-    <header class="header">
-        <a href="#" class="logo">
-            <i class="fas fa-comments"></i>
-            <span>ChatSphere</span>
-        </a>
-        <div class="header-actions">
-            <!-- Гостевой блок -->
-            <div class="auth-buttons" id="authButtons">
-                <button class="btn btn-outline" id="btnLogin" title="Войти">
-                    <i class="fas fa-sign-in-alt"></i> Войти
-                </button>
-                <button class="btn btn-primary" id="btnRegister" title="Зарегистрироваться">
-                    <i class="fas fa-user-plus"></i> Регистрация
-                </button>
-            </div>
-
-            <!-- Профиль (скрыт) -->
-            <div class="profile" id="profileBlock">
-                <div class="avatar" id="profileAvatar">U</div>
-                <div class="profile-info">
-                    <span class="profile-name" id="profileName">Пользователь</span>
-                    <span class="profile-role">Участник</span>
-                </div>
-                <button class="btn-logout" id="btnLogout" title="Выйти">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
+  <div id="app" class="hero">
+    <div class="hero-grid">
+      <div class="left">
+        <div class="logo">
+          <div class="mark">CS</div>
+          <div>
+            <div style="font-weight:700">ChatStudio</div>
+            <div class="small muted">Красивый интерфейс для общения</div>
+          </div>
         </div>
-    </header>
 
-    <!-- БОЛЬШОЙ БЕЛЫЙ КОНТЕЙНЕР (пустой) -->
-    <main class="big-container">
-        <!-- декоративные круги -->
-        <div class="decor-circle c1"></div>
-        <div class="decor-circle c2"></div>
-        <div class="decor-circle c3"></div>
-        <div class="empty-space"></div>
-    </main>
+        <h1>Красивый сайт с рабочим чатом</h1>
+        <p class="lead">Полноэкранная шапка, профиль с аватаром и встроенный чат. Зарегистрируйтесь и начните общение.</p>
 
-    <!-- СЕКЦИЯ ЧАТА -->
-    <section class="chat-section">
-        <div class="chat-card">
-            <div class="chat-header">
-                <div class="avatar-small"><i class="fas fa-users"></i></div>
-                <div class="chat-header-info">
-                    <h3>Общий чат</h3>
-                    <span><span class="online-dot"></span> 24 онлайн</span>
-                </div>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-                <!-- сообщения добавляются скриптом -->
-            </div>
-            <div class="chat-input">
-                <input type="text" id="messageInput" placeholder="Напишите сообщение..." autocomplete="off">
-                <button id="btnSend" title="Отправить">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
+        <div class="cta-row">
+          <button class="btn" id="btn-register">Зарегистрироваться</button>
+          <button class="btn ghost" id="btn-login">Войти</button>
+          <div style="flex:1"></div>
+          <div class="small muted">Статус: <span id="global-status">Не в сети</span></div>
         </div>
-    </section>
 
-    <script>
-        (function() {
-            // DOM элементы
-            const authButtons = document.getElementById('authButtons');
-            const profileBlock = document.getElementById('profileBlock');
-            const btnLogin = document.getElementById('btnLogin');
-            const btnRegister = document.getElementById('btnRegister');
-            const btnLogout = document.getElementById('btnLogout');
-            const profileName = document.getElementById('profileName');
-            const profileAvatar = document.getElementById('profileAvatar');
-            const chatMessages = document.getElementById('chatMessages');
-            const messageInput = document.getElementById('messageInput');
-            const btnSend = document.getElementById('btnSend');
+        <div class="features" style="margin-top:20px">
+          <div class="feature">Профиль с аватаром</div>
+          <div class="feature">Чат в шапке</div>
+          <div class="feature">Локальное хранение</div>
+          <div class="feature">Адаптивный дизайн</div>
+        </div>
+      </div>
 
-            // Состояние
-            let isLoggedIn = false;
-            let currentUserName = 'Гость';
-            let currentAvatarText = 'G';
+      <div class="right">
+        <div class="chat-header">
+          <div class="profile-mini">
+            <div class="avatar" id="mini-avatar">U</div>
+            <div>
+              <div id="mini-name" style="font-weight:700">Гость</div>
+              <div class="status" id="mini-sub">Войдите чтобы начать</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn ghost" id="btn-profile">Профиль</button>
+            <button class="btn ghost" id="btn-logout" style="display:none">Выйти</button>
+          </div>
+        </div>
 
-            // Стартовые сообщения
-            const initialMessages = [
-                { name: 'Анна', text: 'Всем привет! Как настроение?', time: '10:32', me: false, avatar: 'А' },
-                { name: 'Максим', text: 'Привет! Отлично, работаем над проектом 😊', time: '10:35', me: false, avatar: 'М' },
-                { name: 'Вы', text: 'Присоединяюсь к беседе!', time: '10:36', me: true, avatar: 'В' },
-                { name: 'Елена', text: 'Добро пожаловать! Расскажи о себе', time: '10:38', me: false, avatar: 'Е' },
-            ];
+        <div class="chat-body" id="chat-body" aria-live="polite">
+          <!-- Чат пуст при загрузке -->
+        </div>
 
-            function addMessageToDOM(name, text, time, isMe, avatarLetter) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isMe ? 'me' : ''}`;
+        <div class="chat-footer">
+          <input id="chat-input" class="input" placeholder="Введите сообщение..." disabled />
+          <button class="btn" id="send-btn" disabled>Отправить</button>
+          <button class="btn ghost" id="clear-btn">Очистить</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                const avatarDiv = document.createElement('div');
-                avatarDiv.className = 'msg-avatar';
-                avatarDiv.textContent = avatarLetter || (isMe ? 'Я' : name.charAt(0));
+  <!-- Modals -->
+  <div class="modal" id="modal-auth">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-weight:700" id="auth-title">Регистрация</div>
+        <button class="btn ghost" id="close-auth">Закрыть</button>
+      </div>
 
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'message-content';
+      <div id="register-form">
+        <div class="field">
+          <label>Имя</label>
+          <input type="text" id="reg-name" placeholder="Ваше имя" />
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input type="password" id="reg-pass" placeholder="Пароль" />
+        </div>
+        <div class="field">
+          <label>Аватар</label>
+          <input type="file" id="reg-avatar" accept="image/*" />
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" id="do-register">Создать аккаунт</button>
+          <button class="btn ghost" id="switch-to-login">Уже есть аккаунт</button>
+        </div>
+      </div>
 
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'msg-name';
-                nameSpan.textContent = isMe ? 'Вы' : name;
+      <div id="login-form" style="display:none">
+        <div class="field">
+          <label>Имя</label>
+          <input type="text" id="log-name" placeholder="Имя" />
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input type="password" id="log-pass" placeholder="Пароль" />
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" id="do-login">Войти</button>
+          <button class="btn ghost" id="switch-to-register">Создать аккаунт</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                const textP = document.createElement('div');
-                textP.className = 'msg-text';
-                textP.textContent = text;
+  <div class="modal" id="modal-profile">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-weight:700">Профиль</div>
+        <button class="btn ghost" id="close-profile">Закрыть</button>
+      </div>
 
-                const timeSpan = document.createElement('span');
-                timeSpan.className = 'msg-time';
-                timeSpan.textContent = time;
+      <div class="profile-panel">
+        <div class="avatar" id="profile-avatar">U</div>
+        <div class="info">
+          <div class="field">
+            <label>Имя</label>
+            <input type="text" id="profile-name" />
+          </div>
+          <div class="field">
+            <label>Загрузить аватар</label>
+            <input type="file" id="profile-avatar-file" accept="image/*" />
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" id="save-profile">Сохранить</button>
+            <button class="btn ghost" id="close-profile-2">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                contentDiv.appendChild(nameSpan);
-                contentDiv.appendChild(textP);
-                contentDiv.appendChild(timeSpan);
-                messageDiv.appendChild(avatarDiv);
-                messageDiv.appendChild(contentDiv);
+  <script>
+    // Простая клиентская логика для регистрации, входа, профиля и чата.
+    const $ = id => document.getElementById(id);
 
-                chatMessages.appendChild(messageDiv);
-            }
+    // Хранилище пользователей и сессии (демо)
+    const DB_KEY = 'cs_users_v1';
+    const SESSION_KEY = 'cs_session_v1';
+    const CHAT_KEY = 'cs_chat_v1';
 
-            function scrollChatToBottom() {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+    function loadUsers(){
+      try { return JSON.parse(localStorage.getItem(DB_KEY) || '{}') } catch(e){ return {} }
+    }
+    function saveUsers(u){ localStorage.setItem(DB_KEY, JSON.stringify(u)) }
 
-            function getCurrentTime() {
-                const now = new Date();
-                return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            }
+    function setSession(name){
+      localStorage.setItem(SESSION_KEY, JSON.stringify({name, at:Date.now()}));
+      renderAuthState();
+    }
+    function clearSession(){
+      localStorage.removeItem(SESSION_KEY);
+      renderAuthState();
+    }
+    function getSession(){
+      try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null') } catch(e){ return null }
+    }
 
-            function sendMessage() {
-                const text = messageInput.value.trim();
-                if (!text) return;
+    // Chat storage
+    function loadChat(){
+      try { return JSON.parse(localStorage.getItem(CHAT_KEY) || '[]') } catch(e){ return [] }
+    }
+    function saveChat(arr){ localStorage.setItem(CHAT_KEY, JSON.stringify(arr)) }
 
-                const time = getCurrentTime();
-                const avatarLetter = isLoggedIn ? currentAvatarText : 'В';
-                const senderName = isLoggedIn ? currentUserName : 'Вы';
-                addMessageToDOM(senderName, text, time, true, avatarLetter);
-                messageInput.value = '';
-                scrollChatToBottom();
+    // UI elements
+    const modalAuth = $('modal-auth');
+    const modalProfile = $('modal-profile');
+    const chatBody = $('chat-body');
+    const chatInput = $('chat-input');
+    const sendBtn = $('send-btn');
+    const clearBtn = $('clear-btn');
+    const miniAvatar = $('mini-avatar');
+    const miniName = $('mini-name');
+    const miniSub = $('mini-sub');
+    const globalStatus = $('global-status');
+    const btnLogout = $('btn-logout');
 
-                setTimeout(() => {
-                    const botReplies = [
-                        { name: 'Анна', avatar: 'А', text: 'Интересно! 👍' },
-                        { name: 'Максим', avatar: 'М', text: 'Согласен с тобой.' },
-                        { name: 'Елена', avatar: 'Е', text: 'Да, это отличная идея!' },
-                        { name: 'ChatSphere', avatar: 'C', text: 'Спасибо за сообщение!' },
-                    ];
-                    const randomReply = botReplies[Math.floor(Math.random() * botReplies.length)];
-                    addMessageToDOM(randomReply.name, randomReply.text, getCurrentTime(), false, randomReply.avatar);
-                    scrollChatToBottom();
-                }, 1200);
-            }
+    // Helpers
+    function dataURLFromFile(file, cb){
+      const r = new FileReader();
+      r.onload = e => cb(e.target.result);
+      r.readAsDataURL(file);
+    }
+    function avatarInitials(name){
+      if(!name) return 'U';
+      const parts = name.trim().split(/\s+/);
+      return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+    }
 
-            function updateHeaderUI() {
-                if (isLoggedIn) {
-                    authButtons.style.display = 'none';
-                    profileBlock.classList.add('active');
-                    profileBlock.style.display = 'flex';
-                    profileName.textContent = currentUserName;
-                    profileAvatar.textContent = currentAvatarText;
-                } else {
-                    authButtons.style.display = 'flex';
-                    profileBlock.classList.remove('active');
-                    profileBlock.style.display = 'none';
-                }
-            }
+    // Render auth state
+    function renderAuthState(){
+      const s = getSession();
+      const users = loadUsers();
+      if(s && users[s.name]){
+        const user = users[s.name];
+        miniName.textContent = user.name;
+        miniSub.textContent = 'В сети';
+        globalStatus.textContent = 'В сети';
+        btnLogout.style.display = 'inline-flex';
+        $('btn-profile').style.display = 'inline-flex';
+        $('btn-register').style.display = 'none';
+        $('btn-login').style.display = 'none';
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        if(user.avatar) miniAvatar.innerHTML = `<img src="${user.avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover">`;
+        else miniAvatar.textContent = avatarInitials(user.name);
+        renderChat();
+      } else {
+        miniName.textContent = 'Гость';
+        miniSub.textContent = 'Войдите чтобы начать';
+        globalStatus.textContent = 'Не в сети';
+        btnLogout.style.display = 'none';
+        $('btn-profile').style.display = 'none';
+        $('btn-register').style.display = 'inline-flex';
+        $('btn-login').style.display = 'inline-flex';
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        miniAvatar.textContent = 'U';
+        chatBody.innerHTML = ''; // keep empty until login
+      }
+    }
 
-            function loginUser(name) {
-                if (!name || name.trim() === '') name = 'Пользователь';
-                currentUserName = name.trim();
-                currentAvatarText = currentUserName.charAt(0).toUpperCase();
-                isLoggedIn = true;
-                updateHeaderUI();
-                addMessageToDOM('ChatSphere', `👋 ${currentUserName} присоединился(ась) к чату`, getCurrentTime(), false, 'C');
-                scrollChatToBottom();
-            }
+    // Chat rendering
+    function renderChat(){
+      const s = getSession();
+      const messages = loadChat();
+      chatBody.innerHTML = '';
+      // show only messages for current user session (for demo we store all messages but mark owner)
+      messages.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'msg ' + (m.from === (s ? s.name : '') ? 'me' : 'other');
+        el.textContent = m.text;
+        chatBody.appendChild(el);
+      });
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
 
-            function logoutUser() {
-                isLoggedIn = false;
-                currentUserName = 'Гость';
-                currentAvatarText = 'G';
-                updateHeaderUI();
-                addMessageToDOM('ChatSphere', 'Пользователь вышел из чата', getCurrentTime(), false, 'C');
-                scrollChatToBottom();
-            }
+    // Send message
+    function sendMessage(text){
+      const s = getSession();
+      if(!s) return alert('Войдите чтобы отправлять сообщения');
+      const messages = loadChat();
+      messages.push({from: s.name, text: text, at: Date.now()});
+      saveChat(messages);
+      renderChat();
+    }
 
-            btnLogin.addEventListener('click', () => {
-                const name = prompt('Введите ваше имя для входа:', 'Пользователь');
-                if (name !== null) loginUser(name);
-            });
+    // Clear chat
+    clearBtn.addEventListener('click', () => {
+      if(!confirm('Очистить историю чата?')) return;
+      saveChat([]);
+      renderChat();
+    });
 
-            btnRegister.addEventListener('click', () => {
-                const name = prompt('Придумайте имя для регистрации:', 'Новый участник');
-                if (name !== null && name.trim() !== '') loginUser(name);
-                else if (name !== null) alert('Имя не может быть пустым');
-            });
+    // UI events
+    $('btn-register').addEventListener('click', () => {
+      openAuth('register');
+    });
+    $('btn-login').addEventListener('click', () => {
+      openAuth('login');
+    });
+    $('close-auth').addEventListener('click', () => modalAuth.classList.remove('open'));
+    $('switch-to-login').addEventListener('click', () => openAuth('login'));
+    $('switch-to-register').addEventListener('click', () => openAuth('register'));
 
-            btnLogout.addEventListener('click', logoutUser);
+    function openAuth(mode){
+      modalAuth.classList.add('open');
+      if(mode === 'register'){
+        $('auth-title').textContent = 'Регистрация';
+        $('register-form').style.display = '';
+        $('login-form').style.display = 'none';
+      } else {
+        $('auth-title').textContent = 'Вход';
+        $('register-form').style.display = 'none';
+        $('login-form').style.display = '';
+      }
+    }
 
-            btnSend.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-
-            function init() {
-                initialMessages.forEach(msg => {
-                    addMessageToDOM(msg.name, msg.text, msg.time, msg.me, msg.avatar);
-                });
-                scrollChatToBottom();
-                updateHeaderUI();
-            }
-
-            init();
-        })();
-    </script>
-</body>
-</html>
+    // Register
+    $('do-register').addEventListener('click', () => {
+      const name = $('reg-name').value.trim();
+      const pass = $('reg-pass').value;
+      const file = $('reg-avatar').files[0];
+      if(!name || !pass
