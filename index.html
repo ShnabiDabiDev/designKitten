@@ -404,4 +404,110 @@
       const name = $('reg-name').value.trim();
       const pass = $('reg-pass').value;
       const file = $('reg-avatar').files[0];
-      if(!name || !pass
+      if(!name || !pass){ alert('Введите имя и пароль'); return; }
+      const users = loadUsers();
+      if(users[name]){ alert('Пользователь с таким именем уже существует'); return; }
+      const finish = avatarData => {
+        users[name] = {name, pass, avatar: avatarData || null};
+        saveUsers(users);
+        setSession(name);
+        modalAuth.classList.remove('open');
+        // clear form
+        $('reg-name').value='';$('reg-pass').value='';$('reg-avatar').value='';
+      };
+      if(file) dataURLFromFile(file, finish); else finish(null);
+    });
+
+    // Login
+    $('do-login').addEventListener('click', () => {
+      const name = $('log-name').value.trim();
+      const pass = $('log-pass').value;
+      if(!name || !pass){ alert('Введите имя и пароль'); return; }
+      const users = loadUsers();
+      if(!users[name] || users[name].pass !== pass){ alert('Неверное имя или пароль'); return; }
+      setSession(name);
+      modalAuth.classList.remove('open');
+      $('log-name').value='';$('log-pass').value='';
+    });
+
+    // Profile modal
+    $('btn-profile').addEventListener('click', () => {
+      const s = getSession();
+      if(!s) return alert('Войдите');
+      const users = loadUsers();
+      const user = users[s.name];
+      $('profile-name').value = user.name;
+      $('profile-avatar').innerHTML = user.avatar ? `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover">` : avatarInitials(user.name);
+      modalProfile.classList.add('open');
+    });
+    $('close-profile').addEventListener('click', () => modalProfile.classList.remove('open'));
+    $('close-profile-2').addEventListener('click', () => modalProfile.classList.remove('open'));
+
+    $('profile-avatar-file').addEventListener('change', (e) => {
+      const f = e.target.files[0];
+      if(!f) return;
+      dataURLFromFile(f, d => {
+        $('profile-avatar').innerHTML = `<img src="${d}" style="width:100%;height:100%;object-fit:cover">`;
+      });
+    });
+
+    $('save-profile').addEventListener('click', () => {
+      const s = getSession();
+      if(!s) return alert('Войдите');
+      const users = loadUsers();
+      const user = users[s.name];
+      const newName = $('profile-name').value.trim();
+      if(!newName){ alert('Имя не может быть пустым'); return; }
+      // avatar from preview
+      const avatarEl = $('profile-avatar').querySelector('img');
+      const avatarData = avatarEl ? avatarEl.src : null;
+      // if name changed, migrate user key
+      if(newName !== s.name){
+        // prevent overwrite
+        if(users[newName]){ alert('Пользователь с таким именем уже существует'); return; }
+        delete users[s.name];
+        users[newName] = {name:newName, pass:user.pass, avatar:avatarData};
+        saveUsers(users);
+        setSession(newName);
+      } else {
+        users[s.name] = {name:newName, pass:user.pass, avatar:avatarData};
+        saveUsers(users);
+        renderAuthState();
+      }
+      modalProfile.classList.remove('open');
+    });
+
+    // Logout
+    btnLogout.addEventListener('click', () => {
+      clearSession();
+    });
+
+    // Send message handlers
+    sendBtn.addEventListener('click', () => {
+      const text = chatInput.value.trim();
+      if(!text) return;
+      sendMessage(text);
+      chatInput.value = '';
+    });
+    chatInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
+
+    // Initialize
+    renderAuthState();
+
+    // Keep UI in sync across tabs
+    window.addEventListener('storage', (e) => {
+      if([DB_KEY, SESSION_KEY, CHAT_KEY].includes(e.key)) renderAuthState();
+    });
+
+    // Accessibility: announce when chat empty
+    if(loadChat().length === 0){
+      // intentionally leave chat empty on first load
+    }
+  </script>
+</body>
+</html>
