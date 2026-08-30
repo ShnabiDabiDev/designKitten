@@ -357,7 +357,14 @@
     }
     
     async function check () {
-        const result = await fetch('https://designkitten.pages.dev/api/check')
+        const result = await fetch('https://designkitten.pages.dev/api/check', {
+            // method: 'POST',
+            // headers: {
+            //     'Content-Type': 'application/json'
+            // },
+            // body: JSON.stringify({})
+        })
+
         const data = await result.json()
 
         console.log(data)
