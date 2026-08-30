@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ChatStudio — чистая шапка, пустой контейнер и чат</title>
+  <title>ChatStudio — центрированная регистрация</title>
   <style>
     :root{
       --bg:#071428;
@@ -22,7 +22,7 @@
     @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0); } }
     @keyframes msgIn { from { opacity:0; transform: translateY(8px) scale(0.98); } to { opacity:1; transform: translateY(0) scale(1); } }
 
-    /* Header: полностью пустая шапка (без логотипа и текста) */
+    /* Header: пустая шапка */
     header.site-header{
       width:100%;
       padding:18px 28px;
@@ -50,7 +50,7 @@
     .profile-mini{display:flex;align-items:center;gap:10px;color:var(--muted)}
     .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#0ea5a5,#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042027;animation:float 4s ease-in-out infinite}
 
-    /* Большой чистый контейнер — полностью пустой, без лишних элементов */
+    /* Большой чистый контейнер */
     main.container{
       max-width:1100px;
       margin:36px auto;
@@ -103,8 +103,31 @@
     .input:focus{ box-shadow:0 8px 30px rgba(99,102,241,0.08); transform:translateY(-2px) }
     .small{font-size:13px;color:var(--muted)}
 
-    /* Стили для анимации появления сообщений (задержка задаётся в JS) */
-    .chat-body .msg[data-index]{ opacity:0; transform: translateY(8px) scale(.98); animation:msgIn .28s ease forwards; }
+    /* Центрированное модальное окно */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(2,6,23,0.6);
+      z-index:60;
+      padding:20px;
+    }
+    .modal.open{ display:flex; }
+    .card{
+      background:linear-gradient(180deg,#071428,#071a2a);
+      padding:20px;
+      border-radius:14px;
+      min-width:320px;
+      max-width:420px;
+      width:100%;
+      box-shadow:0 20px 60px rgba(2,6,23,0.7);
+      animation:fadeInUp .28s ease both;
+    }
+    .field{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    label{font-size:13px;color:var(--muted)}
+    input[type="text"], input[type="password"]{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;outline:none}
 
     @media (max-width:980px){
       header.site-header{flex-direction:column;align-items:flex-start;gap:12px}
@@ -114,7 +137,7 @@
   </style>
 </head>
 <body>
-  <!-- Шапка: полностью пустая визуально (без логотипа и текста) -->
+  <!-- Шапка: визуально пустая -->
   <header class="site-header" role="banner" aria-label="Шапка сайта">
     <div></div>
     <div class="header-actions" aria-hidden="false">
@@ -135,10 +158,8 @@
     </div>
   </header>
 
-  <!-- Большой чистый контейнер: полностью пустой, без текста и лишних элементов -->
-  <main class="container" role="main" aria-hidden="true">
-    <!-- intentionally empty -->
-  </main>
+  <!-- Большой чистый контейнер (пустой) -->
+  <main class="container" role="main" aria-hidden="true"></main>
 
   <!-- Чат -->
   <section class="chat-wrap" aria-label="Чат">
@@ -151,9 +172,7 @@
         <div class="small" id="chat-count">Сообщений: 0</div>
       </div>
 
-      <div class="chat-body" id="chat-body" aria-live="polite">
-        <!-- Пусто при загрузке -->
-      </div>
+      <div class="chat-body" id="chat-body" aria-live="polite"></div>
 
       <div class="chat-footer">
         <input id="chat-input" class="input" placeholder="Введите сообщение..." disabled aria-label="Поле ввода сообщения" />
@@ -162,9 +181,9 @@
     </div>
   </section>
 
-  <!-- Модали: регистрация/вход и профиль (без логотипов и без лишних элементов) -->
-  <div class="modal" id="modal-auth" aria-hidden="true" style="display:none">
-    <div class="card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+  <!-- Центрированная модалка: регистрация/вход -->
+  <div class="modal" id="modal-auth" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="card" aria-labelledby="auth-title">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div id="auth-title" style="font-weight:700">Регистрация</div>
         <button class="btn ghost" id="close-auth">Закрыть</button>
@@ -202,8 +221,9 @@
     </div>
   </div>
 
-  <div class="modal" id="modal-profile" aria-hidden="true" style="display:none">
-    <div class="card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+  <!-- Профиль (центральная модалка) -->
+  <div class="modal" id="modal-profile" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="card" aria-labelledby="profile-title">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div id="profile-title" style="font-weight:700">Профиль</div>
         <button class="btn ghost" id="close-profile">Закрыть</button>
@@ -314,32 +334,34 @@
       renderChat();
     }
 
-    // UI events
-    $('btn-register').addEventListener('click', () => openAuth('register'));
-    $('btn-login').addEventListener('click', () => openAuth('login'));
-    $('close-auth').addEventListener('click', () => closeModal(modalAuth));
-    $('switch-to-login').addEventListener('click', () => openAuth('login'));
-    $('switch-to-register').addEventListener('click', () => openAuth('register'));
-
+    // Открытие/закрытие модалок (центрирование через CSS .modal.open)
     function openAuth(mode){
-      modalAuth.style.display = 'flex';
       modalAuth.classList.add('open');
       modalAuth.setAttribute('aria-hidden','false');
       if(mode === 'register'){
         $('auth-title').textContent = 'Регистрация';
         $('register-form').style.display = '';
         $('login-form').style.display = 'none';
+        // focus first field
+        setTimeout(()=>$('reg-name').focus(), 120);
       } else {
         $('auth-title').textContent = 'Вход';
         $('register-form').style.display = 'none';
         $('login-form').style.display = '';
+        setTimeout(()=>$('log-name').focus(), 120);
       }
     }
     function closeModal(el){
       el.classList.remove('open');
       el.setAttribute('aria-hidden','true');
-      el.style.display = 'none';
     }
+
+    // UI events
+    $('btn-register').addEventListener('click', () => openAuth('register'));
+    $('btn-login').addEventListener('click', () => openAuth('login'));
+    $('close-auth').addEventListener('click', () => closeModal(modalAuth));
+    $('switch-to-login').addEventListener('click', () => openAuth('login'));
+    $('switch-to-register').addEventListener('click', () => openAuth('register'));
 
     $('do-register').addEventListener('click', () => {
       const name = $('reg-name').value.trim();
@@ -371,9 +393,9 @@
       const users = loadUsers();
       const user = users[s.name];
       $('profile-name').value = user.name;
-      modalProfile.style.display = 'flex';
       modalProfile.classList.add('open');
       modalProfile.setAttribute('aria-hidden','false');
+      setTimeout(()=>$('profile-name').focus(),120);
     });
     $('close-profile').addEventListener('click', () => closeModal(modalProfile));
     $('close-profile-2').addEventListener('click', () => closeModal(modalProfile));
@@ -415,16 +437,20 @@
       }
     });
 
-    renderAuthState();
-    window.addEventListener('storage', (e) => {
-      if([DB_KEY, SESSION_KEY, CHAT_KEY].includes(e.key)) renderAuthState();
-    });
-
+    // Закрытие модалок по Escape и клик вне карточки
     document.addEventListener('keydown', (e) => {
       if(e.key === 'Escape'){
         closeModal(modalAuth);
         closeModal(modalProfile);
       }
+    });
+    // клик по фону закрывает модалку
+    modalAuth.addEventListener('click', (e) => { if(e.target === modalAuth) closeModal(modalAuth); });
+    modalProfile.addEventListener('click', (e) => { if(e.target === modalProfile) closeModal(modalProfile); });
+
+    renderAuthState();
+    window.addEventListener('storage', (e) => {
+      if([DB_KEY, SESSION_KEY, CHAT_KEY].includes(e.key)) renderAuthState();
     });
   </script>
 </body>
