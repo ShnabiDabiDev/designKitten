@@ -355,6 +355,15 @@
       el.classList.remove('open');
       el.setAttribute('aria-hidden','true');
     }
+    
+    async function check () {
+        const result = await fetch('https://designkitten.pages.dev/api/check')
+        const data = await result.json()
+
+        console.log(data)
+    }
+    
+    check()
 
     // UI events
     $('btn-register').addEventListener('click', () => openAuth('register'));
