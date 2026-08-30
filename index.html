@@ -239,12 +239,16 @@
       </div>
     </div>
   </div>
-
+  <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
   <script>
     const DB_KEY = 'cs_users_v3';
     const SESSION_KEY = 'cs_session_v3';
     const CHAT_KEY = 'cs_chat_v3';
     const $ = id => document.getElementById(id);
+    
+    const socket = io("https://backendkitten-kitten.up.railway.app", {
+        transports: ["polling", "websocket"]
+    })
 
     function loadUsers(){ try { return JSON.parse(localStorage.getItem(DB_KEY) || '{}') } catch(e){ return {} } }
     function saveUsers(u){ localStorage.setItem(DB_KEY, JSON.stringify(u)) }
@@ -371,6 +375,10 @@
     }
     
     check()
+
+    socket.on('check', (data) => {
+        console.log('socket connect')
+    })
 
     // UI events
     $('btn-register').addEventListener('click', () => openAuth('register'));
