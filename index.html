@@ -599,83 +599,87 @@
   </div>
   <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
   <script>
-    // ============================================================
-    // ВСЕ ДАННЫЕ В ОПЕРАТИВНОЙ ПАМЯТИ (сбрасываются при перезагрузке)
-    // ============================================================
-    
-    // === База данных в памяти ===
     const socket = io("https://backendkitten-kitten.up.railway.app", {
-      transports: ["polling", "websocket"]
-    });
+    transports: ["polling", "websocket"]
+});
 
-    const DB = {
-      users: {},        // { username: { name, password, avatar } }
-      messages: [],     // [{ from, text, time }]
-      currentUser: null // { name } или null
-    };
+// ============================================================
+// БАЗА ДАННЫХ В ПАМЯТИ
+// ============================================================
+const DB = {
+    users: {},
+    messages: [],
+    currentUser: null
+};
 
-    async function uploadAvatar() {
-            // if (!DB.currentUser) {
-            //     showToast('Войдите в аккаунт', 'error');
-            //     return;
-            // }
+// ============================================================
+// DOM ЭЛЕМЕНТЫ (кэшируем для быстрого доступа)
+// ============================================================
+const $ = id => document.getElementById(id);
 
-            // if (!file || !file.type.startsWith('image/')) {
-            //     showToast('Пожалуйста, выберите изображение', 'error');
-            //     return;
-            // }
+const els = {
+    toast: $('toast'),
+    toastText: $('toast-text'),
+    confetti: $('confetti-container'),
+    welcomeOverlay: $('welcome-overlay'),
+    welcomeName: $('welcome-name'),
+    welcomeBtn: $('welcome-btn'),
+    headerAvatar: $('header-avatar'),
+    headerName: $('header-name'),
+    headerSub: $('header-sub'),
+    chatBody: $('chat-body'),
+    chatCount: $('chat-count'),
+    chatInput: $('chat-input'),
+    chatSub: $('chat-sub'),
+    sendBtn: $('send-btn'),
+    btnRegister: $('btn-register'),
+    btnProfile: $('btn-profile'),
+    btnLogout: $('btn-logout'),
+    modalAuth: $('modal-auth'),
+    modalProfile: $('modal-profile'),
+    regName: $('reg-name'),
+    regPass: $('reg-pass'),
+    doRegister: $('do-register'),
+    closeAuth: $('close-auth'),
+    closeProfile: $('close-profile'),
+    closeProfile2: $('close-profile-2'),
+    profileName: $('profile-name'),
+    saveProfile: $('save-profile'),
+    avatarZone: $('avatar-zone'),
+    avatarInput: $('avatar-input'),
+    avatarPreview: $('avatar-preview'),
+    avatarPlaceholder: $('avatar-placeholder'),
+    removeAvatarBtn: $('remove-avatar-btn')
+};
 
-            // if (file.size > 5 * 1024 * 1024) {
-            //     showToast('Файл слишком большой (макс. 5MB)', 'error');
-            //     return;
-            // }
+// ============================================================
+// TOAST УВЕДОМЛЕНИЯ
+// ============================================================
+let toastTimeout;
 
-            // // Создаем FormData
-            const formData = new FormData();
-            formData.append('username', DB.currentUser.name);
-            // formData.append('avatar', file); // Сам файл!
-
-            const result = await fetch('https://backendkitten-kitten.up.railway.app/api/uploadavatar', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await result.json();
-            if (data) {
-                console.log('[Avatar Upload] Успешно загружено:', data);
-      }
-    }
-
-    uploadAvatar();
-
-    // === DOM элементы ===
-    const $ = id => document.getElementById(id);
-
-    // === Toast уведомления ===
-    let toastTimeout;
-
-    function showToast(message, type = 'success') {
-      const toast = $('toast');
-      const text = $('toast-text');
-      text.textContent = message;
-      toast.className = 'toast ' + type;
-      
-      clearTimeout(toastTimeout);
-      void toast.offsetWidth;
-      toast.classList.add('show');
-      
-      toastTimeout = setTimeout(() => {
+function showToast(message, type = 'success') {
+    const { toast, toastText } = els;
+    toastText.textContent = message;
+    toast.className = 'toast ' + type;
+    
+    clearTimeout(toastTimeout);
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    
+    toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
-      }, 3000);
-    }
+    }, 3000);
+}
 
-    // === Конфетти ===
-    function showConfetti() {
-      const container = $('confetti-container');
-      const colors = ['#6ee7b7', '#60a5fa', '#f472b6', '#fbbf24', '#a78bfa', '#34d399'];
-      
-      container.innerHTML = '';
-      for (let i = 0; i < 60; i++) {
+// ============================================================
+// КОНФЕТТИ
+// ============================================================
+function showConfetti() {
+    const container = els.confetti;
+    const colors = ['#6ee7b7', '#60a5fa', '#f472b6', '#fbbf24', '#a78bfa', '#34d399'];
+    
+    container.innerHTML = '';
+    for (let i = 0; i < 60; i++) {
         const piece = document.createElement('div');
         piece.className = 'confetti-piece';
         piece.style.left = Math.random() * 100 + '%';
@@ -686,152 +690,203 @@
         piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
         piece.style.animationDelay = (Math.random() * 1.5) + 's';
         container.appendChild(piece);
-      }
-      
-      setTimeout(() => {
+    }
+    
+    setTimeout(() => {
         container.innerHTML = '';
-      }, 4000);
-    }
+    }, 4000);
+}
 
-    // === Welcome overlay ===
-    function showWelcome(name) {
-      const overlay = $('welcome-overlay');
-      $('welcome-name').textContent = name + '!';
-      overlay.classList.add('active');
-      showConfetti();
-    }
+// ============================================================
+// WELCOME OVERLAY
+// ============================================================
+function showWelcome(name) {
+    els.welcomeName.textContent = name + '!';
+    els.welcomeOverlay.classList.add('active');
+    showConfetti();
+}
 
-    $('welcome-btn').addEventListener('click', () => {
-      $('welcome-overlay').classList.remove('active');
-    });
+els.welcomeBtn.addEventListener('click', () => {
+    els.welcomeOverlay.classList.remove('active');
+});
 
-    // === Функции работы с пользователями ===
-    function registerUser(name, password) {
-      console.log('[Register] Попытка регистрации:', name);
-      
-      // Проверки
-      if (!name || !password) {
+// ============================================================
+// ПОЛЬЗОВАТЕЛИ
+// ============================================================
+function registerUser(name, password) {
+    if (!name || !password) {
         showToast('Заполните все поля', 'error');
         return false;
-      }
-      if (name.length < 2) {
+    }
+    if (name.length < 2) {
         showToast('Имя должно быть минимум 2 символа', 'error');
         return false;
-      }
-      if (password.length < 4) {
+    }
+    if (password.length < 4) {
         showToast('Пароль должен быть минимум 4 символа', 'error');
         return false;
-      }
-      if (DB.users[name]) {
+    }
+    if (DB.users[name]) {
         showToast('Пользователь с таким именем уже существует', 'error');
         return false;
-      }
+    }
 
-      // Регистрируем
-      DB.users[name] = {
+    DB.users[name] = {
         name: name,
         password: password,
         avatar: null
-      };
-      
-      console.log('[Register] Пользователь создан:', DB.users);
-      return true;
-    }
+    };
+    
+    console.log('[Register] Пользователь создан:', name);
+    return true;
+}
 
-    function loginUser(name, password) {
-      console.log('[Login] Попытка входа:', name);
-      
-      const user = DB.users[name];
-      if (!user) {
+function loginUser(name, password) {
+    const user = DB.users[name];
+    if (!user) {
         showToast('Пользователь не найден', 'error');
         return false;
-      }
-      if (user.password !== password) {
+    }
+    if (user.password !== password) {
         showToast('Неверный пароль', 'error');
         return false;
-      }
-
-      DB.currentUser = { name: name };
-      console.log('[Login] Вход выполнен:', DB.currentUser);
-      return true;
     }
 
-    function logoutUser() {
-      DB.currentUser = null;
-      console.log('[Logout] Выход выполнен');
-      updateUI();
-      showToast('👋 До свидания!', 'success');
-    }
+    DB.currentUser = { name: name };
+    console.log('[Login] Вход выполнен:', name);
+    return true;
+}
 
-    // === Функции работы с сообщениями ===
-    function sendMessage(text) {
-      if (!DB.currentUser) {
+function logoutUser() {
+    DB.currentUser = null;
+    console.log('[Logout] Выход выполнен');
+    updateUI();
+    showToast('👋 До свидания!', 'success');
+}
+
+// ============================================================
+// СООБЩЕНИЯ
+// ============================================================
+function sendMessage(text) {
+    if (!DB.currentUser) {
         showToast('Войдите, чтобы отправлять сообщения', 'error');
         return false;
-      }
+    }
 
-      if (!text || text.trim() === '') {
+    if (!text || text.trim() === '') {
         showToast('Введите сообщение', 'error');
         return false;
-      }
+    }
 
-      DB.messages.push({
+    DB.messages.push({
         from: DB.currentUser.name,
         text: text.trim(),
         time: new Date().toLocaleTimeString()
-      });
+    });
 
-      console.log('[Message] Отправлено:', text);
-      renderChat();
-      return true;
-    }
+    console.log('[Message] Отправлено:', text);
+    renderChat();
+    return true;
+}
 
-    // === Функции работы с аватарами ===
-    function saveAvatar(username, imageData) {
-      if (DB.users[username]) {
+// ============================================================
+// АВАТАРЫ (локальные)
+// ============================================================
+function saveAvatar(username, imageData) {
+    if (DB.users[username]) {
         DB.users[username].avatar = imageData;
         updateUI();
         showToast('✅ Аватар обновлен!', 'success');
-      }
     }
+}
 
-    function removeAvatar(username) {
-      if (DB.users[username]) {
+function removeAvatar(username) {
+    if (DB.users[username]) {
         DB.users[username].avatar = null;
         updateUI();
         showToast('🗑️ Аватар удален', 'success');
-      }
+    }
+}
+
+function getAvatar(username) {
+    return DB.users[username]?.avatar || null;
+}
+
+// ============================================================
+// ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ АВАТАРА (через сервер)
+// ============================================================
+async function uploadAvatar(file) {
+    console.log('🔥 uploadAvatar вызван!');
+    console.log('Файл:', file);
+    
+    if (!DB.currentUser) {
+        showToast('Войдите в аккаунт', 'error');
+        return;
     }
 
-    function getAvatar(username) {
-      return DB.users[username]?.avatar || null;
+    if (!file || !file.type.startsWith('image/')) {
+        showToast('Пожалуйста, выберите изображение', 'error');
+        return;
     }
 
-    // === Рендер UI ===
-    function updateUI() {
-      const user = DB.currentUser;
-      const headerAvatar = $('header-avatar');
-      const headerName = $('header-name');
-      const headerSub = $('header-sub');
-      const chatInput = $('chat-input');
-      const sendBtn = $('send-btn');
-      const chatSub = $('chat-sub');
-      const btnRegister = $('btn-register');
-      const btnProfile = $('btn-profile');
-      const btnLogout = $('btn-logout');
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('Файл слишком большой (макс. 2MB)', 'error');
+        return;
+    }
 
-      if (user) {
+    const formData = new FormData();
+    formData.append('username', DB.currentUser.name);
+    formData.append('avatar', file);
+
+    console.log('📤 Отправляем запрос...');
+
+    try {
+        const response = await fetch('https://backendkitten-kitten.up.railway.app/api/upload-avatar', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('📥 Статус:', response.status);
+        const data = await response.json();
+        console.log('📥 Ответ:', data);
+
+        if (data.success) {
+            showToast('✅ Аватар загружен!', 'success');
+            if (data.url) {
+                saveAvatar(DB.currentUser.name, data.url);
+            }
+            updateUI();
+        } else {
+            showToast('❌ ' + (data.error || 'Ошибка загрузки'), 'error');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка:', error);
+        showToast('❌ Ошибка соединения', 'error');
+    }
+}
+
+// ============================================================
+// РЕНДЕР UI
+// ============================================================
+function updateUI() {
+    const user = DB.currentUser;
+    const {
+        headerAvatar, headerName, headerSub,
+        chatInput, sendBtn, chatSub,
+        btnRegister, btnProfile, btnLogout
+    } = els;
+
+    if (user) {
         const userData = DB.users[user.name];
         headerName.textContent = user.name;
         headerSub.innerHTML = '<span class="badge online">🟢 В сети</span>';
         
-        // Аватар
         if (userData?.avatar) {
-          headerAvatar.innerHTML = `<img src="${userData.avatar}" alt="${user.name}" />`;
-          headerAvatar.style.background = 'transparent';
+            headerAvatar.innerHTML = `<img src="${userData.avatar}" alt="${user.name}" />`;
+            headerAvatar.style.background = 'transparent';
         } else {
-          headerAvatar.innerHTML = user.name.charAt(0).toUpperCase();
-          headerAvatar.style.background = 'linear-gradient(135deg,#0ea5a5,#60a5fa)';
+            headerAvatar.innerHTML = user.name.charAt(0).toUpperCase();
+            headerAvatar.style.background = 'linear-gradient(135deg,#0ea5a5,#60a5fa)';
         }
         
         btnRegister.style.display = 'none';
@@ -840,7 +895,7 @@
         chatInput.disabled = false;
         sendBtn.disabled = false;
         chatSub.textContent = '💬 Чат активен';
-      } else {
+    } else {
         headerName.textContent = 'Гость';
         headerSub.innerHTML = '<span class="badge offline">⚫ Не в сети</span>';
         headerAvatar.innerHTML = 'U';
@@ -851,31 +906,30 @@
         chatInput.disabled = true;
         sendBtn.disabled = true;
         chatSub.textContent = '📝 Зарегистрируйтесь, чтобы начать общение';
-      }
-      
-      renderChat();
     }
+    
+    renderChat();
+}
 
-    function renderChat() {
-      const chatBody = $('chat-body');
-      const chatCount = $('chat-count');
-      const messages = DB.messages;
-      
-      chatBody.innerHTML = '';
-      if (messages.length === 0) {
+function renderChat() {
+    const { chatBody, chatCount } = els;
+    const messages = DB.messages;
+    
+    chatBody.innerHTML = '';
+    if (messages.length === 0) {
         chatBody.innerHTML = `
-          <div style="text-align:center;color:var(--muted);padding:40px 0;font-size:14px;">
-            📭 Пока нет сообщений<br />
-            <span style="font-size:12px;">Будьте первым!</span>
-          </div>
+            <div style="text-align:center;color:var(--muted);padding:40px 0;font-size:14px;">
+                📭 Пока нет сообщений<br />
+                <span style="font-size:12px;">Будьте первым!</span>
+            </div>
         `;
         chatCount.textContent = 'Сообщений: 0';
         return;
-      }
+    }
 
-      const currentUser = DB.currentUser?.name;
-      
-      messages.forEach((m, i) => {
+    const currentUser = DB.currentUser?.name;
+    
+    messages.forEach((m, i) => {
         const isMe = currentUser && m.from === currentUser;
         const el = document.createElement('div');
         el.className = 'msg ' + (isMe ? 'me' : 'other');
@@ -886,8 +940,8 @@
         
         const avatarData = getAvatar(m.from);
         const avatarDisplay = avatarData ? 
-          `<img src="${avatarData}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:4px;" />` : 
-          '';
+            `<img src="${avatarData}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:4px;" />` : 
+            '';
         
         meta.innerHTML = `${avatarDisplay} ${m.from} <span class="timestamp">• ${m.time || new Date().toLocaleTimeString()}</span>`;
         
@@ -896,281 +950,279 @@
         el.appendChild(meta);
         el.appendChild(text);
         chatBody.appendChild(el);
-      });
-      
-      chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
-      chatCount.textContent = 'Сообщений: ' + messages.length;
-    }
+    });
+    
+    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+    chatCount.textContent = 'Сообщений: ' + messages.length;
+}
 
-    // === Модалки ===
-    function openAuth(){
-      const modalAuth = $('modal-auth');
-      modalAuth.classList.add('open');
-      modalAuth.setAttribute('aria-hidden','false');
-      setTimeout(() => $('reg-name')?.focus(), 120);
-    }
+// ============================================================
+// МОДАЛКИ
+// ============================================================
+function openAuth() {
+    els.modalAuth.classList.add('open');
+    els.modalAuth.setAttribute('aria-hidden', 'false');
+    setTimeout(() => els.regName?.focus(), 120);
+}
 
-    function closeModal(el){
-      el.classList.remove('open');
-      el.setAttribute('aria-hidden','true');
-    }
+function closeModal(el) {
+    el.classList.remove('open');
+    el.setAttribute('aria-hidden', 'true');
+}
 
-    // === Обработка файлов для аватара ===
-    function handleFile(file) {
-      if (!file) return;
-      if (!file.type.startsWith('image/')) {
+// ============================================================
+// ОБРАБОТКА ФАЙЛА (локальный превью)
+// ============================================================
+function handleFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
         showToast('Пожалуйста, выберите изображение', 'error');
         return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('Файл слишком большой (макс. 5MB)', 'error');
+    }
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('Файл слишком большой (макс. 2MB)', 'error');
         return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const imageData = e.target.result;
-        if (DB.currentUser) {
-          saveAvatar(DB.currentUser.name, imageData);
-          updateUI();
-        }
-      };
-      reader.onerror = function() {
-        showToast('Ошибка чтения файла', 'error');
-      };
-      reader.readAsDataURL(file);
     }
 
-    // ============================================================
-    // ИНИЦИАЛИЗАЦИЯ
-    // ============================================================
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 ChatStudio инициализируется...');
-      
-      // === Элементы ===
-      const modalAuth = $('modal-auth');
-      const modalProfile = $('modal-profile');
-      const avatarZone = $('avatar-zone');
-      const avatarInput = $('avatar-input');
-      const removeAvatarBtn = $('remove-avatar-btn');
-      const avatarPreview = $('avatar-preview');
-      const avatarPlaceholder = $('avatar-placeholder');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imageData = e.target.result;
+        if (DB.currentUser) {
+            saveAvatar(DB.currentUser.name, imageData);
+            updateUI();
+        }
+    };
+    reader.onerror = function() {
+        showToast('Ошибка чтения файла', 'error');
+    };
+    reader.readAsDataURL(file);
+}
 
-      // === РЕГИСТРАЦИЯ ===
-      $('do-register').addEventListener('click', function() {
-        const name = $('reg-name').value.trim();
-        const pass = $('reg-pass').value;
-        
-        console.log('[UI] Клик по кнопке регистрации:', name);
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 ChatStudio инициализируется...');
+    
+    const {
+        modalAuth, modalProfile,
+        avatarZone, avatarInput, removeAvatarBtn,
+        avatarPreview, avatarPlaceholder,
+        regName, regPass, doRegister,
+        closeAuth, closeProfile, closeProfile2,
+        profileName, saveProfile,
+        chatInput, sendBtn,
+        btnRegister, btnProfile, btnLogout
+    } = els;
+
+    // ============================================================
+    // РЕГИСТРАЦИЯ
+    // ============================================================
+    doRegister.addEventListener('click', function() {
+        const name = regName.value.trim();
+        const pass = regPass.value;
         
         if (registerUser(name, pass)) {
-          // Автоматически входим после регистрации
-          if (loginUser(name, pass)) {
-            closeModal(modalAuth);
-            $('reg-name').value = '';
-            $('reg-pass').value = '';
-            updateUI();
-            showToast(`🎉 Добро пожаловать, ${name}!`, 'success');
-            showWelcome(name);
-          }
+            if (loginUser(name, pass)) {
+                closeModal(modalAuth);
+                regName.value = '';
+                regPass.value = '';
+                updateUI();
+                showToast(`🎉 Добро пожаловать, ${name}!`, 'success');
+                showWelcome(name);
+            }
         }
-      });
+    });
 
-      // Enter для регистрации
-      $('reg-pass').addEventListener('keydown', (e) => {
+    regPass.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          e.preventDefault();
-          $('do-register').click();
+            e.preventDefault();
+            doRegister.click();
         }
-      });
+    });
 
-      // === Кнопка регистрации в шапке ===
-      $('btn-register').addEventListener('click', openAuth);
-      $('close-auth').addEventListener('click', () => closeModal(modalAuth));
-      modalAuth.addEventListener('click', (e) => { 
-        if(e.target === modalAuth) closeModal(modalAuth); 
-      });
+    btnRegister.addEventListener('click', openAuth);
+    closeAuth.addEventListener('click', () => closeModal(modalAuth));
+    modalAuth.addEventListener('click', (e) => { 
+        if (e.target === modalAuth) closeModal(modalAuth); 
+    });
 
-      // === ВЫХОД ===
-      $('btn-logout').addEventListener('click', () => {
+    // ============================================================
+    // ВЫХОД
+    // ============================================================
+    btnLogout.addEventListener('click', () => {
         if (confirm('Выйти из аккаунта?')) {
-          logoutUser();
+            logoutUser();
         }
-      });
+    });
 
-      // === ПРОФИЛЬ ===
-      $('btn-profile').addEventListener('click', function() {
+    // ============================================================
+    // ПРОФИЛЬ
+    // ============================================================
+    btnProfile.addEventListener('click', function() {
         if (!DB.currentUser) return;
         
-        const profileName = $('profile-name');
         profileName.value = DB.currentUser.name;
         
-        // Загружаем аватар в превью
         const avatarData = getAvatar(DB.currentUser.name);
         if (avatarData) {
-          avatarPreview.src = avatarData;
-          avatarPreview.style.display = 'block';
-          avatarPlaceholder.style.display = 'none';
-          removeAvatarBtn.classList.add('visible');
+            avatarPreview.src = avatarData;
+            avatarPreview.style.display = 'block';
+            avatarPlaceholder.style.display = 'none';
+            removeAvatarBtn.classList.add('visible');
         } else {
-          avatarPreview.style.display = 'none';
-          avatarPlaceholder.style.display = 'block';
-          removeAvatarBtn.classList.remove('visible');
+            avatarPreview.style.display = 'none';
+            avatarPlaceholder.style.display = 'block';
+            removeAvatarBtn.classList.remove('visible');
         }
         
         modalProfile.classList.add('open');
-        modalProfile.setAttribute('aria-hidden','false');
+        modalProfile.setAttribute('aria-hidden', 'false');
         setTimeout(() => profileName?.focus(), 120);
-      });
+    });
 
-      $('close-profile').addEventListener('click', () => closeModal(modalProfile));
-      $('close-profile-2').addEventListener('click', () => closeModal(modalProfile));
-      modalProfile.addEventListener('click', (e) => { 
-        if(e.target === modalProfile) closeModal(modalProfile); 
-      });
+    closeProfile.addEventListener('click', () => closeModal(modalProfile));
+    closeProfile2.addEventListener('click', () => closeModal(modalProfile));
+    modalProfile.addEventListener('click', (e) => { 
+        if (e.target === modalProfile) closeModal(modalProfile); 
+    });
 
-      // === СОХРАНЕНИЕ ПРОФИЛЯ ===
-      $('save-profile').addEventListener('click', function() {
+    // ============================================================
+    // СОХРАНЕНИЕ ПРОФИЛЯ
+    // ============================================================
+    saveProfile.addEventListener('click', function() {
         if (!DB.currentUser) return;
         
-        const newName = $('profile-name').value.trim();
+        const newName = profileName.value.trim();
         if (!newName) {
-          showToast('Имя не может быть пустым', 'error');
-          return;
+            showToast('Имя не может быть пустым', 'error');
+            return;
         }
         if (newName.length < 2) {
-          showToast('Имя минимум 2 символа', 'error');
-          return;
+            showToast('Имя минимум 2 символа', 'error');
+            return;
         }
 
         const oldName = DB.currentUser.name;
         const userData = DB.users[oldName];
         
         if (newName !== oldName) {
-          if (DB.users[newName]) {
-            showToast('Пользователь с таким именем уже существует', 'error');
-            return;
-          }
-          
-          // Переносим данные
-          DB.users[newName] = { ...userData, name: newName };
-          delete DB.users[oldName];
-          
-          // Обновляем сообщения
-          DB.messages = DB.messages.map(m => {
-            if (m.from === oldName) m.from = newName;
-            return m;
-          });
-          
-          DB.currentUser.name = newName;
-          showToast(`✅ Имя изменено на ${newName}`, 'success');
+            if (DB.users[newName]) {
+                showToast('Пользователь с таким именем уже существует', 'error');
+                return;
+            }
+            
+            DB.users[newName] = { ...userData, name: newName };
+            delete DB.users[oldName];
+            
+            DB.messages = DB.messages.map(m => {
+                if (m.from === oldName) m.from = newName;
+                return m;
+            });
+            
+            DB.currentUser.name = newName;
+            showToast(`✅ Имя изменено на ${newName}`, 'success');
         } else {
-          showToast('✅ Профиль обновлен', 'success');
+            showToast('✅ Профиль обновлен', 'success');
         }
         
         closeModal(modalProfile);
         updateUI();
-      });
+    });
 
-      // === AVATAR UPLOAD ===
-      avatarZone.addEventListener('click', function(e) {
+    // ============================================================
+    // AVATAR UPLOAD (через сервер)
+    // ============================================================
+    avatarZone.addEventListener('click', function(e) {
         if (e.target === removeAvatarBtn || removeAvatarBtn?.contains(e.target)) return;
         if (!DB.currentUser) {
-          showToast('Войдите в аккаунт', 'error');
-          return;
+            showToast('Войдите в аккаунт', 'error');
+            return;
         }
         avatarInput.click();
-      });
+    });
 
-      avatarInput.addEventListener('change', function(e) {
+    avatarInput.addEventListener('change', function(e) {
+        console.log('📎 Файл выбран через input!');
         if (this.files && this.files[0]) {
-          handleFile(this.files[0]);
+            uploadAvatar(this.files[0]);
         }
         this.value = '';
-      });
+    });
 
-      avatarZone.addEventListener('dragover', function(e) {
+    avatarZone.addEventListener('dragover', function(e) {
         e.preventDefault();
         this.classList.add('dragover');
-      });
-      avatarZone.addEventListener('dragleave', function(e) {
+    });
+    
+    avatarZone.addEventListener('dragleave', function(e) {
         e.preventDefault();
         this.classList.remove('dragover');
-      });
-      avatarZone.addEventListener('drop', function(e) {
+    });
+    
+    avatarZone.addEventListener('drop', function(e) {
         e.preventDefault();
         this.classList.remove('dragover');
         if (!DB.currentUser) {
-          showToast('Войдите в аккаунт', 'error');
-          return;
+            showToast('Войдите в аккаунт', 'error');
+            return;
         }
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-          handleFile(e.dataTransfer.files[0]);
+            console.log('📎 Файл дропнут!');
+            uploadAvatar(e.dataTransfer.files[0]);
         }
-      });
+    });
 
-      removeAvatarBtn.addEventListener('click', function(e) {
+    removeAvatarBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         if (!DB.currentUser) {
-          showToast('Войдите в аккаунт', 'error');
-          return;
+            showToast('Войдите в аккаунт', 'error');
+            return;
         }
         if (confirm('Удалить аватар?')) {
-          removeAvatar(DB.currentUser.name);
+            removeAvatar(DB.currentUser.name);
         }
-      });
+    });
 
-      // === ОТПРАВКА СООБЩЕНИЙ ===
-      $('send-btn').addEventListener('click', function() {
-        const text = $('chat-input').value;
+    // ============================================================
+    // ОТПРАВКА СООБЩЕНИЙ
+    // ============================================================
+    sendBtn.addEventListener('click', function() {
+        const text = chatInput.value;
         if (sendMessage(text)) {
-          $('chat-input').value = '';
-          $('chat-input').focus();
+            chatInput.value = '';
+            chatInput.focus();
         }
-      });
+    });
 
-      $('chat-input').addEventListener('keydown', function(e) {
+    chatInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          const text = this.value;
-          if (sendMessage(text)) {
-            this.value = '';
-            this.focus();
-          }
+            e.preventDefault();
+            const text = this.value;
+            if (sendMessage(text)) {
+                this.value = '';
+                this.focus();
+            }
         }
-      });
+    });
 
-      // === Закрытие модалок по Escape ===
-      document.addEventListener('keydown', (e) => {
+    // ============================================================
+    // ЗАКРЫТИЕ МОДАЛОК ПО ESCAPE
+    // ============================================================
+    document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          closeModal(modalAuth);
-          closeModal(modalProfile);
+            closeModal(modalAuth);
+            closeModal(modalProfile);
         }
-      });
+    });
 
-      // === ИНИЦИАЛИЗАЦИЯ ===
-      updateUI();
-      console.log('✅ ChatStudio готов!');
-      console.log('📊 Текущие данные:', DB);
+    // ============================================================
+    // ИНИЦИАЛИЗАЦИЯ
+    // ============================================================
+    updateUI();
+    console.log('✅ ChatStudio готов!');
+    console.log('📊 Текущие данные:', DB);
 });
-
-// === Использование ===
-// avatarInput.addEventListener('change', function(e) {
-//     if (this.files && this.files[0]) {
-//         uploadAvatar(this.files[0]);
-//     }
-//     this.value = '';
-// });
-
-// avatarZone.addEventListener('drop', function(e) {
-//     e.preventDefault();
-//     this.classList.remove('dragover');
-//     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-//         uploadAvatar(e.dataTransfer.files[0]);
-//     }
-// });
-    
-    
   </script>
 </body>
 </html>
