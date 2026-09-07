@@ -1119,11 +1119,51 @@
       updateUI();
       console.log('✅ ChatStudio готов!');
       console.log('📊 Текущие данные:', DB);
-    });
-    socket.on('check', () => {
-      console.log('🔗 Подключено к серверу Socket.IO');
-    });
 
+      async function uploadAvatar(file) {
+    if (!DB.currentUser) {
+        showToast('Войдите в аккаунт', 'error');
+        return;
+    }
+
+    if (!file || !file.type.startsWith('image/')) {
+        showToast('Пожалуйста, выберите изображение', 'error');
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('Файл слишком большой (макс. 5MB)', 'error');
+        return;
+    }
+
+    // Создаем FormData
+    const formData = new FormData();
+    formData.append('username', DB.currentUser.name);
+    formData.append('avatar', file); // Сам файл!
+
+    const result = await fetch('https://backendkitten-kitten.up.railway.app/api/upload-avatar', {
+        method: 'POST',
+        body: formaData
+    });
+}
+
+// === Использование ===
+avatarInput.addEventListener('change', function(e) {
+    if (this.files && this.files[0]) {
+        uploadAvatar(this.files[0]);
+    }
+    this.value = '';
+});
+
+avatarZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        uploadAvatar(e.dataTransfer.files[0]);
+    }
+});
+    });
+    
   </script>
 </body>
 </html>
