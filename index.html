@@ -1141,7 +1141,7 @@
     formData.append('username', DB.currentUser.name);
     formData.append('avatar', file); // Сам файл!
 
-    const result = await fetch('https://backendkitten-kitten.up.railway.app/api/upload-avatar', {
+    const result = await fetch('https://backendkitten-kitten.up.railway.app/api/uploadavatar', {
         method: 'POST',
         body: formData
     });
