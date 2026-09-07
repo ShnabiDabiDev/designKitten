@@ -1145,6 +1145,11 @@
         method: 'POST',
         body: formaData
     });
+
+    const data = await result.json();
+    if (data.success) {
+        console.log('[Avatar Upload] Успешно загружено:', data);
+    }
 }
 
 // === Использование ===
