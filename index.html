@@ -852,9 +852,6 @@ async function uploadAvatar(file) {
 
         if (data.success) {
             showToast('✅ Аватар загружен!', 'success');
-            if (data.url) {
-                saveAvatar(DB.currentUser.name, data.url);
-            }
             updateUI();
         } else {
             showToast('❌ ' + (data.error || 'Ошибка загрузки'), 'error');
