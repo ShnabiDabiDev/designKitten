@@ -713,7 +713,7 @@ els.welcomeBtn.addEventListener('click', () => {
 // ============================================================
 // ПОЛЬЗОВАТЕЛИ
 // ============================================================
-function registerUser(name, password) {
+async function registerUser(name, password) {
     if (!name || !password) {
         showToast('Заполните все поля', 'error');
         return false;
@@ -736,6 +736,20 @@ function registerUser(name, password) {
         password: password,
         avatar: null
     };
+
+    const result = await fetch('https://backendkitten-kitten.up.railway.app/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password })
+    });
+
+    const data = await result.json();
+    if (data) {
+        showToast('✅ Пользователь зарегистрирован!', 'success');
+        showWelcome(name);
+    } else {
+        showToast('❌ Ошибка регистрации', 'error');
+    }
     
     console.log('[Register] Пользователь создан:', name);
     return true;
